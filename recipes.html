@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Kayley's Hair Tips</title>
+        <link rel="stylesheet" href="styles.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Boldonse&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+
+    <body>
+        <div class="container">
+            <header>
+                <h1><a id = "title" style = "color:#12402A;" href="/living-archives/index.html">Kayley's Living Archives</a></h1>
+            </header>
+
+            <nav>
+                <h2 id="message"><span id="timeofhour">hi</span></h2>
+                <div class = "nav-display">
+                    <svg width="60" height="35"  fill="none" onClick = "mobileNav()">
+                        <line x1="10" y1="14" x2="50" y2="14" stroke="#373502" stroke-width="5" stroke-linecap="round" />
+                        <line x1="10" y1="22" x2="50" y2="22" stroke="#373502" stroke-width="5" stroke-linecap="round"/>
+                        <line x1="10" y1="30" x2="50" y2="30" stroke="#373502" stroke-width="5" stroke-linecap="round"/>
+
+                    </svg>
+
+                </div>
+                
+
+                <div class ="links">
+                    <h3><a href = "index.html">Home</a></h3>
+                    <h3><a href = "plants.html">Plants</a></h3>
+                    <h3><a href = "recipes.html">Recipes</a></h3>
+                </div>
+            </nav>
+
+            <main>
+                <h2>Click the button to see the recipe :)</h2>
+                <button onclick="cornmealPudding()">Cornmeal Porridge</button>
+                <button onclick="toto()" >Toto</button>
+                <div id="cornmeal" style = "display: none;">
+                    <h3>Cornmeal Porridge Recipe</h3>
+                    <h4>Ingredients</h4>
+                    <p>
+                        <ul>
+                            <li>2 cups water separated</li>
+                            <li>3 1/2 cup milk</li>
+                            <li>1 cup fine yellow cornmeal</li>
+                            <li>1 ½ teaspoon vanilla extract</li>
+                            <li>½ teaspoon ground cinnamon</li>
+                            <li>1 bay leaf</li>
+                            <li>¼ teaspoon ground all-spice</li>
+                            <li>½ cup sweetened condensed milk or to taste</li>
+                        </ul>
+                    </p>
+                    <h4>Instructions</h4>
+                    <p>
+                        <ol style = "font-size: 1.5em;">
+                            <li>Add 2 cups water, 3 1/2 cup milk to a 4 QT heavy bottomed pot. Bring to a boil over medium-high heat with vanilla extract, cinnamon, bay leaf, and all-spice.</li> </br>
+                            <li>Meanwhile, add 1 cup cornmeal and 1 cup water to a large mixing cup and whisk until smooth.</li></br>
+                            <li>Once the pot begins to boil, whisk in cornmeal mixture and continue to whisk for about 1 minute, ensuring there are no lumps. Reduce heat to low and cover with a tight fitting lid.</li> </br>
+                            <li>Once the pot begins to boil, whisk in cornmeal mixture and continue to whisk for about 1 minute, ensuring there are no lumps. Reduce heat to low and cover with a tight fitting lid.</li></br>
+                            <li>Cook over low heat for 15-20 minutes, stirring occasionally. When there is about 5 minutes left,. Remove from heat and sweeten with condensed milk. Serve and enjoy.</li></br>
+                        </ol>
+
+                        
+                    </p>
+                    <h3>*Altered from <a href = "https://www.myforkinglife.com/jamaican-cornmeal-porridge/" style="text-decoration: underline;">this recipe*</a></h3>
+                </div>
+                <div id="toto" style = "display: none;">
+                    <h3>Toto Recipe</h3>
+                    <h4>coming soon</h4>
+                </div>
+            </main>
+        
+            <footer>
+                <h4>All from the mind and heart of Kayley Chery  </h4>
+            </footer>
+
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
