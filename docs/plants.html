@@ -61,6 +61,13 @@
                 <p class="gallery-status-msg">No plants yet — check back soon!</p>
             </div>
 
+            <!-- Photo zoom overlay -->
+            <div id="photo-zoom-overlay" class="photo-zoom-overlay" style="display:none;" onclick="closePhotoZoom(event)">
+                <div class="photo-zoom-box">
+                    <img id="photo-zoom-img" src="" alt="" class="photo-zoom-img">
+                </div>
+            </div>
+
             <!-- Login modal -->
             <div id="login-modal" class="modal-overlay" style="display:none;" onclick="closeLoginOnOverlay(event)">
                 <div class="modal-box">

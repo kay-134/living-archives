@@ -151,6 +151,7 @@ header {
 
 main {
     grid-area: main;
+    position: relative;
 }
 
 main a {
@@ -548,6 +549,42 @@ footer {
     margin: 0 0 8px;
 }
 
+/* ── Photo zoom overlay ─────────────────────────────────────────── */
+
+.photo-zoom-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(18, 64, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    cursor: pointer;
+}
+
+.photo-zoom-box {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+}
+
+.photo-zoom-img {
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(18, 64, 42, 0.4);
+    display: block;
+    margin: 0;
+}
+
+.plant-card-img {
+    cursor: zoom-in;
+}
+
 /* ── Add Plant modal ─────────────────────────────────────────────── */
 
 .modal-overlay {
@@ -788,6 +825,10 @@ footer {
 
     .gallery-status-msg {
         color: #d5c8b5;
+    }
+
+    .photo-zoom-overlay {
+        background-color: rgba(0, 0, 0, 0.7);
     }
 
 }
