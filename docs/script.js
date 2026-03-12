@@ -59,11 +59,14 @@ function clock() {
 
 //changes the main page photo depending on the day of the week
 function photoOfTheDay(){
+    // Guard: element only exists on the home page
+    if (!homePhoto) return;
+
     //Sunday
     if (day > 3){
         homePhoto.src = "./images/me5/me-1500.png";
         homePhoto.srcset = "./images/me5/me-3000.png 2x, ./images/me5/me-4500.png 3x";
-    
+
     }
     //Tuesday
     if (day <= 3){
