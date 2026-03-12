@@ -581,6 +581,30 @@ footer {
     margin: 0;
 }
 
+.photo-zoom-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background-color: #f5efe6;
+    color: #12402A;
+    font-size: 1.4em;
+    line-height: 1;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(18, 64, 42, 0.3);
+}
+
+.photo-zoom-close:hover {
+    background-color: #BF8580;
+    color: #d5c8b5;
+}
+
 .plant-card-img {
     cursor: zoom-in;
 }

@@ -63,6 +63,7 @@
 
             <!-- Photo zoom overlay -->
             <div id="photo-zoom-overlay" class="photo-zoom-overlay" style="display:none;" onclick="closePhotoZoom(event)">
+                <button class="photo-zoom-close" onclick="document.getElementById('photo-zoom-overlay').style.display='none'">&times;</button>
                 <div class="photo-zoom-box">
                     <img id="photo-zoom-img" src="" alt="" class="photo-zoom-img">
                 </div>
