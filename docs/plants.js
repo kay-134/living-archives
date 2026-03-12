@@ -1,109 +1,113 @@
 // =====================================================================
-// plants.js — Plant Gallery with Google Authentication & Firebase
+// plants.js — Plant Gallery with simple email + password login
+// No external services required — everything runs in the browser.
 // =====================================================================
 //
-// FIRST-TIME SETUP (do this once before using the site):
+// SETUP: Set your email and password below.
 //
-// 1. Go to https://console.firebase.google.com and create a project.
+// Step 1 — paste your email into ALLOWED_EMAIL.
 //
-// 2. Inside the project, click "Add app" (web icon </>), register the app,
-//    and copy the firebaseConfig object into FIREBASE_CONFIG below.
+// Step 2 — generate your password hash:
+//   Open your browser's DevTools console (F12) and run this line,
+//   replacing "yourpassword" with the password you want to use:
 //
-// 3. In the Firebase console → Authentication → Sign-in method,
-//    enable "Google" as a provider.
+//     crypto.subtle.digest('SHA-256', new TextEncoder().encode('yourpassword'))
+//       .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
 //
-// 4. In Authentication → Settings → Authorized domains, add your
-//    GitHub Pages domain (e.g. your-username.github.io).
-//
-// 5. In Firestore Database → Create database (Production mode).
-//    Then go to Rules and paste:
-//
-//      rules_version = '2';
-//      service cloud.firestore {
-//        match /databases/{database}/documents {
-//          match /plants/{plantId} {
-//            allow read: if true;
-//            allow create, delete: if request.auth != null
-//              && request.auth.token.email.matches('.*@nyu\\.edu');
-//          }
-//        }
-//      }
+//   Copy the long string it prints and paste it into PASSWORD_HASH below.
 //
 // =====================================================================
 
-const FIREBASE_CONFIG = {
-    apiKey:            "YOUR_API_KEY",
-    authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId:         "YOUR_PROJECT_ID",
-    storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId:             "YOUR_APP_ID"
-};
+const ALLOWED_EMAIL   = 'your.email@nyu.edu';   // ← change this
+const PASSWORD_HASH   = 'PASTE_YOUR_HASH_HERE';  // ← change this
 
-// Only @nyu.edu addresses may post or delete plants.
-const NYU_DOMAIN = 'nyu.edu';
+// How long (ms) to stay logged in without activity (default: 8 hours)
+const SESSION_TTL_MS  = 8 * 60 * 60 * 1000;
 
-// Images are resized client-side to fit within this square (px) before upload.
-const MAX_IMG_PX = 600;
+// Max image dimension (px) before resizing
+const MAX_IMG_PX      = 600;
 
-// ─── Firebase bootstrap ───────────────────────────────────────────
+// ─── Session management ───────────────────────────────────────────
 
-let auth, db, currentUser = null, lastSnapshot = null;
+let currentUser = null;
 
-(function initFirebase() {
-    if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
-        showGalleryMessage(
-            'The plant gallery is not yet connected to a database. ' +
-            'See plants.js for setup instructions.',
-            'error-msg'
-        );
-        return;
-    }
-
-    try {
-        firebase.initializeApp(FIREBASE_CONFIG);
-        auth = firebase.auth();
-        db   = firebase.firestore();
-
-        auth.onAuthStateChanged(handleAuthChange);
-        subscribeToPlants();
-    } catch (e) {
-        console.error('Firebase init error:', e);
-        showGalleryMessage('Could not connect to the database. Please refresh.', 'error-msg');
-    }
-})();
-
-// ─── Authentication ───────────────────────────────────────────────
-
-function handleAuthChange(user) {
-    if (user && user.email && user.email.endsWith('@' + NYU_DOMAIN)) {
-        currentUser = user;
-    } else {
-        currentUser = null;
-        if (user) {
-            // Signed in but not an NYU address — boot them out
-            auth.signOut();
-            alert('Only @nyu.edu email addresses can post to the plant gallery.');
-        }
-    }
-    updateAuthUI();
-    renderGallery(lastSnapshot);   // re-render to show/hide delete buttons
+function saveSession(email) {
+    sessionStorage.setItem('plant_session', JSON.stringify({
+        email,
+        expires: Date.now() + SESSION_TTL_MS
+    }));
 }
 
-function signInWithGoogle() {
-    if (!auth) return;
-    const provider = new firebase.auth.GoogleAuthProvider();
-    // Hint Google's account-picker to surface NYU accounts first
-    provider.setCustomParameters({ hd: NYU_DOMAIN });
-    auth.signInWithPopup(provider).catch(err => {
-        if (err.code !== 'auth/popup-closed-by-user') {
-            alert('Sign-in error: ' + err.message);
+function loadSession() {
+    const raw = sessionStorage.getItem('plant_session');
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    if (Date.now() > session.expires) {
+        sessionStorage.removeItem('plant_session');
+        return null;
+    }
+    return session;
+}
+
+function clearSession() {
+    sessionStorage.removeItem('plant_session');
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────
+
+function showLoginModal() {
+    document.getElementById('login-modal').style.display = 'flex';
+    document.getElementById('login-error').style.display = 'none';
+    document.getElementById('login-form').reset();
+    setTimeout(() => document.getElementById('login-email').focus(), 50);
+}
+
+function closeLoginModal() {
+    document.getElementById('login-modal').style.display = 'none';
+    document.getElementById('login-form').reset();
+    document.getElementById('login-error').style.display = 'none';
+}
+
+function closeLoginOnOverlay(e) {
+    if (e.target === document.getElementById('login-modal')) closeLoginModal();
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    const email    = document.getElementById('login-email').value.trim().toLowerCase();
+    const password = document.getElementById('login-password').value;
+    const btn      = document.getElementById('login-submit-btn');
+    const errEl    = document.getElementById('login-error');
+
+    btn.disabled    = true;
+    btn.textContent = 'Checking...';
+    errEl.style.display = 'none';
+
+    try {
+        const hash = await sha256(password);
+
+        if (email === ALLOWED_EMAIL.toLowerCase() && hash === PASSWORD_HASH.toLowerCase()) {
+            currentUser = email;
+            saveSession(email);
+            closeLoginModal();
+            updateAuthUI();
+        } else {
+            errEl.style.display = 'block';
         }
-    });
+    } catch (err) {
+        console.error('Login error:', err);
+        errEl.textContent = 'An error occurred. Please try again.';
+        errEl.style.display = 'block';
+    } finally {
+        btn.disabled    = false;
+        btn.textContent = 'Log In';
+    }
 }
 
 function signOut() {
-    if (auth) auth.signOut();
+    currentUser = null;
+    clearSession();
+    updateAuthUI();
 }
 
 function updateAuthUI() {
@@ -115,53 +119,45 @@ function updateAuthUI() {
     if (currentUser) {
         signinArea.style.display = 'none';
         userArea.style.display   = 'flex';
-        nameEl.textContent = currentUser.displayName || currentUser.email;
+        nameEl.textContent = currentUser;
         addArea.style.display = 'block';
     } else {
         signinArea.style.display = 'block';
         userArea.style.display   = 'none';
         addArea.style.display    = 'none';
-        closeModal();
+        closeAddModal();
     }
+    renderGallery();
 }
 
-// ─── Firestore / Gallery ──────────────────────────────────────────
+// ─── Plant posts (localStorage) ───────────────────────────────────
 
-function subscribeToPlants() {
-    db.collection('plants')
-        .orderBy('createdAt', 'desc')
-        .onSnapshot(snapshot => {
-            lastSnapshot = snapshot;
-            renderGallery(snapshot);
-        }, err => {
-            console.error('Firestore error:', err);
-            showGalleryMessage('Could not load plants. Please refresh.', 'error-msg');
-        });
+function getPosts() {
+    return JSON.parse(localStorage.getItem('plant_posts') || '[]');
 }
 
-function renderGallery(snapshot) {
+function savePosts(posts) {
+    localStorage.setItem('plant_posts', JSON.stringify(posts));
+}
+
+function renderGallery() {
     const gallery = document.getElementById('plant-gallery');
-    if (!snapshot || snapshot.empty) {
-        showGalleryMessage(
-            'No plants yet — log in with your NYU email to add the first one!',
-            'gallery-status-msg'
-        );
+    const posts   = getPosts();
+
+    if (posts.length === 0) {
+        gallery.innerHTML = currentUser
+            ? '<p class="gallery-status-msg">No plants yet — add your first one!</p>'
+            : '<p class="gallery-status-msg">No plants yet — check back soon!</p>';
         return;
     }
+
     gallery.innerHTML = '';
-    snapshot.forEach(doc => gallery.appendChild(buildCard({ id: doc.id, ...doc.data() })));
+    posts.forEach(post => gallery.appendChild(buildCard(post)));
 }
 
 function buildCard(post) {
     const card = document.createElement('div');
     card.className = 'plant-card';
-
-    const date = post.createdAt
-        ? new Date(post.createdAt.toMillis()).toLocaleDateString('en-US', {
-            year: 'numeric', month: 'long', day: 'numeric'
-          })
-        : '';
-
     card.innerHTML = `
         ${post.imageData
             ? `<img src="${post.imageData}" alt="${esc(post.name)}" class="plant-card-img">`
@@ -170,11 +166,9 @@ function buildCard(post) {
         <div class="plant-card-body">
             <h3 class="plant-card-name">${esc(post.name)}</h3>
             ${post.desc ? `<p class="plant-card-desc">${esc(post.desc)}</p>` : ''}
-            <p class="plant-card-meta">
-                Added by ${esc(post.author)}${date ? ' &middot; ' + date : ''}
-            </p>
+            <p class="plant-card-meta">${post.date}</p>
             ${currentUser
-                ? `<button class="delete-btn" onclick="deletePost('${post.id}')">Remove</button>`
+                ? `<button class="delete-btn" onclick="deletePost(${post.id})">Remove</button>`
                 : ''
             }
         </div>
@@ -183,19 +177,20 @@ function buildCard(post) {
 }
 
 function deletePost(id) {
-    if (!currentUser || !db) return;
+    if (!currentUser) return;
     if (!confirm('Remove this plant from the gallery?')) return;
-    db.collection('plants').doc(id).delete()
-        .catch(err => alert('Could not remove plant: ' + err.message));
+    savePosts(getPosts().filter(p => p.id !== id));
+    renderGallery();
 }
 
-// ─── Modal ────────────────────────────────────────────────────────
+// ─── Add plant modal ──────────────────────────────────────────────
 
-function showModal() {
+function showAddModal() {
     document.getElementById('plant-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('plant-name').focus(), 50);
 }
 
-function closeModal() {
+function closeAddModal() {
     const modal = document.getElementById('plant-modal');
     if (!modal) return;
     modal.style.display = 'none';
@@ -204,18 +199,15 @@ function closeModal() {
     if (preview) preview.style.display = 'none';
 }
 
-function closeModalOnOverlay(e) {
-    if (e.target === document.getElementById('plant-modal')) closeModal();
+function closeAddOnOverlay(e) {
+    if (e.target === document.getElementById('plant-modal')) closeAddModal();
 }
 
 function previewImage(input) {
     const preview = document.getElementById('image-preview');
     if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = e => {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-        };
+        reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
         reader.readAsDataURL(input.files[0]);
     } else {
         preview.style.display = 'none';
@@ -224,7 +216,7 @@ function previewImage(input) {
 
 function submitPlant(e) {
     e.preventDefault();
-    if (!currentUser || !db) return;
+    if (!currentUser) return;
 
     const name = document.getElementById('plant-name').value.trim();
     const desc = document.getElementById('plant-desc').value.trim();
@@ -240,29 +232,40 @@ function submitPlant(e) {
 }
 
 function savePost(name, desc, imageData) {
-    const btn = document.querySelector('#plant-form .submit-btn');
-    btn.disabled = true;
+    const btn = document.getElementById('plant-submit-btn');
+    btn.disabled    = true;
     btn.textContent = 'Saving...';
 
-    db.collection('plants').add({
+    const posts = getPosts();
+    posts.unshift({
+        id:        Date.now(),
         name,
         desc,
         imageData,
-        author:      currentUser.displayName || currentUser.email,
-        authorEmail: currentUser.email,
-        createdAt:   firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => closeModal())
-    .catch(err => alert('Could not save plant: ' + err.message))
-    .finally(() => {
-        btn.disabled = false;
-        btn.textContent = 'Add Plant';
+        date: new Date().toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        })
     });
+    savePosts(posts);
+    closeAddModal();
+    renderGallery();
+
+    btn.disabled    = false;
+    btn.textContent = 'Add Plant';
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────
 
-// Resize an image file to fit within maxPx × maxPx, return JPEG base64
+async function sha256(message) {
+    const buffer = await crypto.subtle.digest(
+        'SHA-256',
+        new TextEncoder().encode(message)
+    );
+    return [...new Uint8Array(buffer)]
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+}
+
 function resizeImage(file, maxPx, callback) {
     const reader = new FileReader();
     reader.onload = e => {
@@ -286,7 +289,6 @@ function resizeImage(file, maxPx, callback) {
     reader.readAsDataURL(file);
 }
 
-// Replace special HTML characters to prevent XSS
 function esc(str) {
     if (!str) return '';
     return str
@@ -296,8 +298,10 @@ function esc(str) {
         .replace(/"/g,  '&quot;');
 }
 
-// Clear the gallery and show a single status/error message
-function showGalleryMessage(msg, cssClass) {
-    const gallery = document.getElementById('plant-gallery');
-    gallery.innerHTML = `<p class="${cssClass}">${msg}</p>`;
-}
+// ─── Init ─────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', function () {
+    const session = loadSession();
+    if (session) currentUser = session.email;
+    updateAuthUI();
+});
