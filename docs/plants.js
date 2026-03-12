@@ -1,47 +1,59 @@
 // =====================================================================
-// plants.js — Plant Gallery with email/password login, Imgur upload,
-//             EXIF date extraction, and JSONbin storage
+// plants.js — Plant Gallery with email/password login and JSONbin storage
+// Photos are linked by URL — paste a Google Drive share link, an Imgur
+// link, or any direct image URL and it will be auto-converted & previewed.
 // =====================================================================
 //
-// SETUP (one-time):
-//
-// ── Step 1: Login credentials ────────────────────────────────────
-//   Set ALLOWED_EMAIL to your NYU email.
-//   Generate your password hash in DevTools console (F12):
-//
-//     crypto.subtle.digest('SHA-256', new TextEncoder().encode('yourpassword'))
-//       .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
-//
-//   Paste the result into PASSWORD_HASH.
-//
-// ── Step 2: Imgur Client ID (for photo uploads) ──────────────────
-//   a. Create a free account at https://imgur.com
-//   b. Go to https://api.imgur.com/oauth2/addclient
-//   c. Choose "Anonymous usage without user authorization"
-//   d. Fill in any name/email, submit, and copy the Client ID
-//   e. Paste it into IMGUR_CLIENT_ID below.
-//
-// ── Step 3: JSONbin (for storing post data) ───────────────────────
-//   a. Create a free account at https://jsonbin.io
-//   b. Click "+ Create Bin", paste { "plants": [] }, save
-//   c. Copy the Bin ID from the URL
-//   d. Go to API Keys → "+ Create Access Key" (Read + Update)
-//   e. Paste both into JSONBIN_BIN_ID and JSONBIN_API_KEY below.
+// HOW TO SHARE A GOOGLE DRIVE PHOTO:
+//   1. Upload the photo to Google Drive.
+//   2. Right-click it → "Share" → set access to "Anyone with the link".
+//   3. Click "Copy link" and paste it into the Photo URL field.
+//      The link will be converted automatically.
 //
 // =====================================================================
 
-const ALLOWED_EMAIL    = 'kac7748@nyu.edu';
-const PASSWORD_HASH    = '2b0461ebc5da244009d1237372cb04da8af87ba29f3124d906d49efc3b1668e5';
+const ALLOWED_EMAIL   = 'kac7748@nyu.edu';
+const PASSWORD_HASH   = '2b0461ebc5da244009d1237372cb04da8af87ba29f3124d906d49efc3b1668e5';
 
-const IMGUR_CLIENT_ID  = 'YOUR_IMGUR_CLIENT_ID';  // ← still needed: from api.imgur.com
-const JSONBIN_BIN_ID   = '69b247d8c3097a1dd51ad1d6';
-const JSONBIN_API_KEY  = '$2a$10$IbtBG2jQyTMCGfy6W4XLuu/ET6LVsKKw2XR3sdWMZb816rGXpDkZW';
+const JSONBIN_BIN_ID  = '69b247d8c3097a1dd51ad1d6';
+const JSONBIN_API_KEY = '$2a$10$IbtBG2jQyTMCGfy6W4XLuu/ET6LVsKKw2XR3sdWMZb816rGXpDkZW';
 
-const SESSION_TTL_MS   = 8 * 60 * 60 * 1000;
+const SESSION_TTL_MS  = 8 * 60 * 60 * 1000;
+
+// ─── URL normalizer ───────────────────────────────────────────────
+// Converts share-page links into embeddable direct image URLs.
+
+function normalizeImageUrl(raw) {
+    if (!raw) return null;
+    const url = raw.trim();
+    if (!url) return null;
+
+    // Google Drive share link → thumbnail CDN (more reliable than uc?export=view)
+    // Matches: drive.google.com/file/d/FILE_ID/...
+    //      or: drive.google.com/open?id=FILE_ID
+    const driveFile = url.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+    if (driveFile) {
+        return `https://drive.google.com/thumbnail?id=${driveFile[1]}&sz=w1000`;
+    }
+    const driveOpen = url.match(/drive\.google\.com\/open\?id=([A-Za-z0-9_-]+)/);
+    if (driveOpen) {
+        return `https://drive.google.com/thumbnail?id=${driveOpen[1]}&sz=w1000`;
+    }
+
+    // Imgur page link → direct image
+    // Matches: imgur.com/XXXXX  (not i.imgur.com which is already direct)
+    const imgurPage = url.match(/^https?:\/\/(?:www\.)?imgur\.com\/([A-Za-z0-9]+)(?:\.[a-z]+)?$/);
+    if (imgurPage) {
+        return `https://i.imgur.com/${imgurPage[1]}.jpg`;
+    }
+
+    // Anything else (direct image URL, i.imgur.com, lh3.googleusercontent.com, etc.) — use as-is
+    return url;
+}
 
 // ─── JSONbin API ──────────────────────────────────────────────────
 
-const BIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+const BIN_URL     = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 const BIN_HEADERS = {
     'Content-Type': 'application/json',
     'X-Access-Key': JSONBIN_API_KEY
@@ -61,69 +73,6 @@ async function writePosts(posts) {
         body: JSON.stringify({ plants: posts })
     });
     if (!res.ok) throw new Error(`JSONbin write failed: ${res.status}`);
-}
-
-// ─── Imgur upload ─────────────────────────────────────────────────
-
-async function uploadToImgur(file) {
-    const formData = new FormData();
-    formData.append('image', file);
-
-    const res = await fetch('https://api.imgur.com/3/image', {
-        method: 'POST',
-        headers: { Authorization: `Client-ID ${IMGUR_CLIENT_ID}` },
-        body: formData
-    });
-
-    if (!res.ok) throw new Error(`Imgur upload failed: ${res.status}`);
-    const data = await res.json();
-    return data.data.link; // direct image URL
-}
-
-// ─── EXIF extraction ──────────────────────────────────────────────
-
-// Stored by onPhotoSelected so submitPlant can access it
-let pendingExifDate = null;
-
-async function onPhotoSelected(input) {
-    const preview      = document.getElementById('image-preview');
-    const exifRow      = document.getElementById('exif-date-row');
-    const exifValue    = document.getElementById('exif-date-value');
-    pendingExifDate    = null;
-
-    if (!input.files || !input.files[0]) {
-        preview.style.display = 'none';
-        exifRow.style.display = 'none';
-        return;
-    }
-
-    const file = input.files[0];
-
-    // Show local preview immediately
-    const reader = new FileReader();
-    reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
-    reader.readAsDataURL(file);
-
-    // Try to read EXIF date
-    try {
-        if (typeof exifr !== 'undefined') {
-            const exif = await exifr.parse(file, ['DateTimeOriginal', 'DateTime']);
-            const raw  = exif && (exif.DateTimeOriginal || exif.DateTime);
-            if (raw) {
-                pendingExifDate = raw instanceof Date ? raw : new Date(raw);
-                exifValue.textContent = pendingExifDate.toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'long', day: 'numeric'
-                });
-                exifRow.style.display = 'flex';
-                return;
-            }
-        }
-    } catch (e) {
-        // EXIF read failed — just skip it silently
-    }
-
-    // No EXIF date found
-    exifRow.style.display = 'none';
 }
 
 // ─── Session management ───────────────────────────────────────────
@@ -222,12 +171,6 @@ function updateAuthUI() {
 
 async function loadAndRender() {
     const gallery = document.getElementById('plant-gallery');
-
-    if (JSONBIN_BIN_ID === 'YOUR_BIN_ID') {
-        gallery.innerHTML = '<p class="gallery-status-msg">Gallery not connected yet — see plants.js for setup instructions.</p>';
-        return;
-    }
-
     gallery.innerHTML = '<p class="gallery-status-msg">Loading plants...</p>';
     try {
         const posts = await fetchPosts();
@@ -262,16 +205,10 @@ function buildCard(post) {
             <h3 class="plant-card-name">${esc(post.name)}</h3>
             ${post.comment ? `<p class="plant-card-desc">${esc(post.comment)}</p>` : ''}
             <div class="plant-card-meta-block">
-                ${post.photoDate
-                    ? `<p class="plant-card-meta">&#128247; Taken ${esc(post.photoDate)}</p>`
-                    : ''
-                }
+                ${post.photoDate ? `<p class="plant-card-meta">&#128247; Taken ${esc(post.photoDate)}</p>` : ''}
                 <p class="plant-card-meta">Posted ${esc(post.datePosted)}</p>
             </div>
-            ${currentUser
-                ? `<button class="delete-btn" onclick="deletePost(${post.id})">Remove</button>`
-                : ''
-            }
+            ${currentUser ? `<button class="delete-btn" onclick="deletePost(${post.id})">Remove</button>` : ''}
         </div>
     `;
     return card;
@@ -293,7 +230,7 @@ async function deletePost(id) {
 
 function showAddModal() {
     document.getElementById('plant-modal').style.display = 'flex';
-    pendingExifDate = null;
+    document.getElementById('image-preview').style.display = 'none';
     setTimeout(() => document.getElementById('plant-name').focus(), 50);
 }
 
@@ -303,54 +240,56 @@ function closeAddModal() {
     modal.style.display = 'none';
     document.getElementById('plant-form').reset();
     document.getElementById('image-preview').style.display = 'none';
-    document.getElementById('exif-date-row').style.display = 'none';
-    pendingExifDate = null;
 }
 
 function closeAddOnOverlay(e) {
     if (e.target === document.getElementById('plant-modal')) closeAddModal();
 }
 
+// Live-preview the URL as it is typed or pasted
+function setupUrlPreview() {
+    const input   = document.getElementById('plant-image-url');
+    const preview = document.getElementById('image-preview');
+    if (!input) return;
+
+    input.addEventListener('input', function () {
+        const normalized = normalizeImageUrl(this.value);
+        if (normalized) {
+            preview.src     = normalized;
+            preview.style.display = 'block';
+            preview.onerror = () => { preview.style.display = 'none'; };
+            preview.onload  = () => { preview.style.display = 'block'; };
+        } else {
+            preview.style.display = 'none';
+        }
+    });
+}
+
 async function submitPlant(e) {
     e.preventDefault();
     if (!currentUser) return;
 
-    const name    = document.getElementById('plant-name').value.trim();
-    const comment = document.getElementById('plant-comment').value.trim();
-    const file    = document.getElementById('plant-image').files[0];
+    const name      = document.getElementById('plant-name').value.trim();
+    const rawUrl    = document.getElementById('plant-image-url').value.trim();
+    const photoDate = document.getElementById('plant-photo-date').value.trim();
+    const comment   = document.getElementById('plant-comment').value.trim();
 
     if (!name) return;
 
+    const imageUrl = normalizeImageUrl(rawUrl);
+
     const btn = document.getElementById('plant-submit-btn');
     btn.disabled = true;
+    btn.textContent = 'Saving...';
 
     try {
-        let imageUrl = null;
-
-        if (file) {
-            if (IMGUR_CLIENT_ID === 'YOUR_IMGUR_CLIENT_ID') {
-                alert('Imgur Client ID not set up yet — see plants.js setup instructions. Your post will be saved without a photo.');
-            } else {
-                btn.textContent = 'Uploading photo...';
-                imageUrl = await uploadToImgur(file);
-            }
-        }
-
-        btn.textContent = 'Saving...';
-
-        const photoDate = pendingExifDate
-            ? pendingExifDate.toLocaleDateString('en-US', {
-                year: 'numeric', month: 'long', day: 'numeric'
-              })
-            : null;
-
         const posts = await fetchPosts();
         posts.unshift({
             id:         Date.now(),
             name,
             comment,
             imageUrl,
-            photoDate,
+            photoDate:  photoDate || null,
             datePosted: new Date().toLocaleDateString('en-US', {
                             year: 'numeric', month: 'long', day: 'numeric'
                         })
@@ -359,7 +298,6 @@ async function submitPlant(e) {
         closeAddModal();
         renderGallery(posts);
     } catch (err) {
-        console.error(err);
         alert('Could not save plant: ' + err.message);
     } finally {
         btn.disabled = false;
@@ -384,5 +322,6 @@ function esc(str) {
 document.addEventListener('DOMContentLoaded', function () {
     const session = loadSession();
     if (session) currentUser = session.email;
+    setupUrlPreview();
     updateAuthUI();
 });
