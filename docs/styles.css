@@ -563,6 +563,7 @@ footer {
 }
 
 .photo-zoom-box {
+    position: relative;
     width: 50%;
     display: flex;
     align-items: center;
@@ -583,8 +584,8 @@ footer {
 
 .photo-zoom-close {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: -14px;
+    right: -14px;
     background-color: #f5efe6;
     color: #12402A;
     font-size: 1.4em;
