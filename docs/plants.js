@@ -31,7 +31,7 @@
 // =====================================================================
 
 const ALLOWED_EMAIL    = 'kac7748@nyu.edu';
-const PASSWORD_HASH    = 'PASTE_YOUR_HASH_HERE';  // ← still needed: generate in DevTools console
+const PASSWORD_HASH    = '2b0461ebc5da244009d1237372cb04da8af87ba29f3124d906d49efc3b1668e5';
 
 const IMGUR_CLIENT_ID  = 'YOUR_IMGUR_CLIENT_ID';  // ← still needed: from api.imgur.com
 const JSONBIN_BIN_ID   = '69b247d8c3097a1dd51ad1d6';
