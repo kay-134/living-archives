@@ -30,12 +30,12 @@
 //
 // =====================================================================
 
-const ALLOWED_EMAIL    = 'your.email@nyu.edu';   // ← your NYU email
-const PASSWORD_HASH    = 'PASTE_YOUR_HASH_HERE';  // ← SHA-256 hash
+const ALLOWED_EMAIL    = 'kac7748@nyu.edu';
+const PASSWORD_HASH    = 'PASTE_YOUR_HASH_HERE';  // ← still needed: generate in DevTools console
 
-const IMGUR_CLIENT_ID  = 'YOUR_IMGUR_CLIENT_ID';  // ← from api.imgur.com
-const JSONBIN_BIN_ID   = 'YOUR_BIN_ID';           // ← from jsonbin.io
-const JSONBIN_API_KEY  = 'YOUR_API_KEY';           // ← from jsonbin.io
+const IMGUR_CLIENT_ID  = 'YOUR_IMGUR_CLIENT_ID';  // ← still needed: from api.imgur.com
+const JSONBIN_BIN_ID   = '69b247d8c3097a1dd51ad1d6';
+const JSONBIN_API_KEY  = '$2a$10$IbtBG2jQyTMCGfy6W4XLuu/ET6LVsKKw2XR3sdWMZb816rGXpDkZW';
 
 const SESSION_TTL_MS   = 8 * 60 * 60 * 1000;
 
