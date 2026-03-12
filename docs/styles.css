@@ -151,6 +151,7 @@ header {
 
 main {
     grid-area: main;
+    position: relative;
 }
 
 main a {
@@ -244,9 +245,14 @@ footer {
     .flex-container img {
         width: min-content; /* Makes image responsive */
         height: auto; /* Maintains aspect ratio */
-            
+
     }
-    
+
+    /* 2 cards per row on tablet */
+    .plant-card {
+        flex: 0 0 calc(50% - 10px);
+    }
+
 }
 
 
@@ -308,9 +314,14 @@ footer {
     .flex-container img {
         width: min-content; /* Makes image responsive */
         height: auto; /* Maintains aspect ratio */
-            
+
     }
-   
+
+    /* 1 card per row on mobile */
+    .plant-card {
+        flex: 0 0 100%;
+    }
+
 }
 
 /* ── Plant Gallery ──────────────────────────────────────────────── */
@@ -394,10 +405,10 @@ footer {
     color: #d5c8b5;
 }
 
-/* Gallery grid */
+/* Gallery flexbox */
 .plant-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 20px;
     padding: 12px 16px 20px;
 }
@@ -410,6 +421,8 @@ footer {
     display: flex;
     flex-direction: column;
     box-shadow: 0 2px 8px rgba(18, 64, 42, 0.15);
+    /* 3 per row on desktop: (100% - 2 gaps) / 3 */
+    flex: 0 0 calc(33.333% - 14px);
 }
 
 .plant-card-img {
@@ -478,7 +491,7 @@ footer {
 
 .gallery-status-msg,
 .error-msg {
-    grid-column: 1 / -1;
+    width: 100%;
     text-align: center;
     color: #12402A;
     font-family: 'Lucida Sans', sans-serif;
@@ -534,6 +547,42 @@ footer {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     font-size: 0.9em;
     margin: 0 0 8px;
+}
+
+/* ── Photo zoom overlay ─────────────────────────────────────────── */
+
+.photo-zoom-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(18, 64, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    cursor: pointer;
+}
+
+.photo-zoom-box {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+}
+
+.photo-zoom-img {
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(18, 64, 42, 0.4);
+    display: block;
+    margin: 0;
+}
+
+.plant-card-img {
+    cursor: zoom-in;
 }
 
 /* ── Add Plant modal ─────────────────────────────────────────────── */
@@ -776,6 +825,10 @@ footer {
 
     .gallery-status-msg {
         color: #d5c8b5;
+    }
+
+    .photo-zoom-overlay {
+        background-color: rgba(0, 0, 0, 0.7);
     }
 
 }

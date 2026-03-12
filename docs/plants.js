@@ -193,12 +193,27 @@ function renderGallery(posts) {
     posts.forEach(post => gallery.appendChild(buildCard(post)));
 }
 
+function openPhotoZoom(imageUrl, altText) {
+    const overlay = document.getElementById('photo-zoom-overlay');
+    const img     = document.getElementById('photo-zoom-img');
+    img.src = imageUrl;
+    img.alt = altText;
+    overlay.style.display = 'flex';
+}
+
+function closePhotoZoom(e) {
+    const box = document.querySelector('.photo-zoom-box');
+    if (!box || !box.contains(e.target)) {
+        document.getElementById('photo-zoom-overlay').style.display = 'none';
+    }
+}
+
 function buildCard(post) {
     const card = document.createElement('div');
     card.className = 'plant-card';
     card.innerHTML = `
         ${post.imageUrl
-            ? `<img src="${esc(post.imageUrl)}" alt="${esc(post.name)}" class="plant-card-img" onerror="this.style.display='none'">`
+            ? `<img src="${esc(post.imageUrl)}" alt="${esc(post.name)}" class="plant-card-img" onerror="this.style.display='none'" onclick="openPhotoZoom('${esc(post.imageUrl)}', '${esc(post.name)}')">`
             : '<div class="plant-card-placeholder">No photo</div>'
         }
         <div class="plant-card-body">
