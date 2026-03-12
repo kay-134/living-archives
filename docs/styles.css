@@ -490,6 +490,12 @@ footer {
     color: #BF8580;
 }
 
+.field-hint {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 0.78em;
+    color: #6461A0;
+}
+
 .login-error {
     color: #BF8580;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
