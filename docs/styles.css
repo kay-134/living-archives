@@ -313,6 +313,351 @@ footer {
    
 }
 
+/* ── Plant Gallery ──────────────────────────────────────────────── */
+
+.plants-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 16px 8px;
+}
+
+.plants-title {
+    flex: 1;
+    text-align: left;
+    min-width: 160px;
+}
+
+.auth-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#signin-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.signin-hint {
+    font-size: 0.75em;
+    color: #12402A;
+    margin: 0;
+    text-align: center;
+}
+
+.google-signin-btn {
+    background-color: #7A8C54;
+    color: #d5c8b5;
+    cursor: pointer;
+}
+
+.google-signin-btn:hover {
+    background-color: #6461A0;
+    color: #d5c8b5;
+}
+
+#user-area {
+    align-items: center;
+    gap: 12px;
+}
+
+.user-name {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: #12402A;
+    font-size: 0.9em;
+}
+
+.signout-btn {
+    background-color: #BF8580;
+    color: #12402A;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.signout-btn:hover {
+    background-color: #a06a65;
+    color: #d5c8b5;
+}
+
+.add-plant-btn {
+    background-color: #7A8C54;
+    color: #d5c8b5;
+    cursor: pointer;
+}
+
+.add-plant-btn:hover {
+    background-color: #6461A0;
+    color: #d5c8b5;
+}
+
+/* Gallery grid */
+.plant-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 12px 16px 20px;
+}
+
+/* Individual plant card */
+.plant-card {
+    background-color: #f5efe6;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(18, 64, 42, 0.15);
+}
+
+.plant-card-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.plant-card-placeholder {
+    width: 100%;
+    height: 160px;
+    background-color: #c8bca8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6a5e50;
+    font-family: 'Lucida Sans', sans-serif;
+    font-size: 0.9em;
+}
+
+.plant-card-body {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.plant-card-name {
+    font-family: "Boldonse", system-ui;
+    font-size: 1.1em;
+    color: #12402A;
+    margin: 0;
+    text-align: left;
+}
+
+.plant-card-desc {
+    font-size: 0.9em;
+    color: #12402A;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.plant-card-meta {
+    font-size: 0.75em;
+    color: #6461A0;
+    margin: 0;
+    margin-top: auto;
+}
+
+.delete-btn {
+    background-color: #BF8580;
+    color: #12402A;
+    font-size: 0.8em;
+    padding: 6px 12px;
+    cursor: pointer;
+    align-self: flex-start;
+    border-radius: 10px;
+}
+
+.delete-btn:hover {
+    background-color: #a06a65;
+    color: #d5c8b5;
+}
+
+.gallery-status-msg,
+.error-msg {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #12402A;
+    font-family: 'Lucida Sans', sans-serif;
+    padding: 40px 20px;
+    margin: 0;
+}
+
+.error-msg {
+    color: #BF8580;
+}
+
+.field-hint {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 0.78em;
+    color: #6461A0;
+}
+
+/* EXIF date row shown inside the photo form-group */
+.exif-date-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 6px 10px;
+    background-color: #e8e0d5;
+    border-radius: 10px;
+}
+
+.exif-label {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 0.8em;
+    color: #12402A;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.exif-value {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 0.8em;
+    color: #6461A0;
+}
+
+/* Meta block at the bottom of a plant card */
+.plant-card-meta-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: auto;
+}
+
+.login-error {
+    color: #BF8580;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 0.9em;
+    margin: 0 0 8px;
+}
+
+/* ── Add Plant modal ─────────────────────────────────────────────── */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(18, 64, 42, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+.modal-box {
+    background-color: #d5c8b5;
+    border-radius: 10px;
+    padding: 28px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-box h3 {
+    color: #12402A;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 0.9em;
+    color: #12402A;
+    font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+    border: 2px solid #7A8C54;
+    border-radius: 10px;
+    padding: 10px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 1em;
+    background-color: #f5efe6;
+    color: #12402A;
+    resize: vertical;
+}
+
+.form-group input[type="text"]:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #6461A0;
+}
+
+.form-group input[type="url"] {
+    border: 2px solid #7A8C54;
+    border-radius: 10px;
+    padding: 10px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 1em;
+    background-color: #f5efe6;
+    color: #12402A;
+}
+
+.form-group input[type="url"]:focus {
+    outline: none;
+    border-color: #6461A0;
+}
+
+.form-group input[type="file"] {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 0.9em;
+    color: #12402A;
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-top: 8px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.submit-btn {
+    background-color: #7A8C54;
+    color: #d5c8b5;
+    cursor: pointer;
+    flex: 1;
+}
+
+.submit-btn:hover {
+    background-color: #6461A0;
+    color: #d5c8b5;
+}
+
+.cancel-btn {
+    background-color: #c8bca8;
+    color: #12402A;
+    cursor: pointer;
+}
+
+.cancel-btn:hover {
+    background-color: #BF8580;
+    color: #d5c8b5;
+}
+
+/* ── Dark mode — plant gallery overrides ────────────────────────── */
+
 /* Website Made for Light Mode so color specification is for dark mode */
 /* Dark Mode */
 @media (prefers-color-scheme: dark){
@@ -374,10 +719,63 @@ footer {
     button {
         background-color: #BF8580;
         color: #12402A;
-        border: none; 
+        border: none;
         font-size: 1.6em;
         border-radius: 10px;
         font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana, sans-serif';
     }
-    
+
+    /* Plant gallery dark mode */
+    .plant-card {
+        background-color: #1e5238;
+    }
+
+    .plant-card-name {
+        color: #d5c8b5;
+    }
+
+    .plant-card-desc {
+        color: #d5c8b5;
+    }
+
+    .plant-card-placeholder {
+        background-color: #2a6a48;
+        color: #a0b090;
+    }
+
+    .plant-card-meta {
+        color: #BF8580;
+    }
+
+    .modal-box {
+        background-color: #1a3a28;
+    }
+
+    .modal-box h3 {
+        color: #d5c8b5;
+    }
+
+    .form-group label {
+        color: #d5c8b5;
+    }
+
+    .form-group input[type="text"],
+    .form-group textarea {
+        background-color: #12402A;
+        color: #d5c8b5;
+        border-color: #7A8C54;
+    }
+
+    .signin-hint {
+        color: #d5c8b5;
+    }
+
+    .user-name {
+        color: #d5c8b5;
+    }
+
+    .gallery-status-msg {
+        color: #d5c8b5;
+    }
+
 }

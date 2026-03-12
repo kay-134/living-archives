@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Kayley's Hair Tips</title>
+    <title>Kayley's Plants</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,41 +13,114 @@
 <body>
     <div class="container">
         <header>
-                <h1><a id = "title" style = "color:#12402A;" href="/living-archives/index.html">Kayley's Living Archives</a></h1>
+            <h1><a id="title" style="color:#12402A;" href="/living-archives/index.html">Kayley's Living Archives</a></h1>
         </header>
 
         <nav>
             <h2 id="message"><span id="timeofhour">hi</span></h2>
-            <div class = "nav-display">
-                <svg width="60" height="35"  fill="none" onClick = "mobileNav()">
+            <div class="nav-display">
+                <svg width="60" height="35" fill="none" onclick="mobileNav()">
                     <line x1="10" y1="14" x2="50" y2="14" stroke="#373502" stroke-width="5" stroke-linecap="round" />
                     <line x1="10" y1="22" x2="50" y2="22" stroke="#373502" stroke-width="5" stroke-linecap="round"/>
                     <line x1="10" y1="30" x2="50" y2="30" stroke="#373502" stroke-width="5" stroke-linecap="round"/>
-
                 </svg>
-
             </div>
-            
-
-            <div class ="links">
-                <h3><a href = "index.html">Home</a></h3>
-                <h3><a href = "plants.html">Plants</a></h3>
-                <h3><a href = "recipes.html">Recipes</a></h3>
+            <div class="links">
+                <h3><a href="index.html">Home</a></h3>
+                <h3><a href="plants.html">Plants</a></h3>
+                <h3><a href="recipes.html">Recipes</a></h3>
             </div>
         </nav>
 
         <main>
-            <h2>Coming Soon...</h2>
+            <!-- Page heading + auth controls -->
+            <div class="plants-header">
+                <h2 class="plants-title">Plant Gallery</h2>
 
-            <div class="flex-container">
+                <div class="auth-section">
+                    <!-- Signed-out state -->
+                    <div id="signin-area">
+                        <button class="google-signin-btn" onclick="showLoginModal()">Admin Login</button>
+                    </div>
 
+                    <!-- Signed-in state -->
+                    <div id="user-area" style="display:none;">
+                        <span id="signed-in-name" class="user-name"></span>
+                        <button class="signout-btn" onclick="signOut()">Sign Out</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add-plant button (only visible when logged in) -->
+            <div id="add-plant-area" style="display:none; padding: 0 16px 8px;">
+                <button class="add-plant-btn" onclick="showAddModal()">+ Add Plant</button>
+            </div>
+
+            <!-- Gallery grid -->
+            <div id="plant-gallery" class="plant-gallery">
+                <p class="gallery-status-msg">No plants yet — check back soon!</p>
+            </div>
+
+            <!-- Login modal -->
+            <div id="login-modal" class="modal-overlay" style="display:none;" onclick="closeLoginOnOverlay(event)">
+                <div class="modal-box">
+                    <h3>Admin Login</h3>
+                    <form id="login-form" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" placeholder="your@nyu.edu" required autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+                        </div>
+                        <p id="login-error" class="login-error" style="display:none;">Incorrect email or password.</p>
+                        <div class="modal-actions">
+                            <button type="submit" class="submit-btn" id="login-submit-btn">Log In</button>
+                            <button type="button" class="cancel-btn" onclick="closeLoginModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Add-plant modal -->
+            <div id="plant-modal" class="modal-overlay" style="display:none;" onclick="closeAddOnOverlay(event)">
+                <div class="modal-box">
+                    <h3>Add a Plant</h3>
+                    <form id="plant-form" onsubmit="submitPlant(event)">
+                        <div class="form-group">
+                            <label for="plant-name">Plant Name *</label>
+                            <input type="text" id="plant-name" required placeholder="e.g. Monstera Deliciosa">
+                        </div>
+                        <div class="form-group">
+                            <label for="plant-image-url">Photo URL</label>
+                            <input type="text" id="plant-image-url" placeholder="Paste a Google Drive share link or any image URL">
+                            <span class="field-hint">Supports Google Drive share links, Imgur links, or any direct image URL.</span>
+                            <img id="image-preview" class="image-preview" style="display:none;" alt="Preview">
+                        </div>
+                        <div class="form-group">
+                            <label for="plant-photo-date">Date Taken (optional)</label>
+                            <input type="text" id="plant-photo-date" placeholder="e.g. March 2024">
+                        </div>
+                        <div class="form-group">
+                            <label for="plant-comment">Comment</label>
+                            <textarea id="plant-comment" rows="3" placeholder="What do you want to say about this plant?"></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="submit" class="submit-btn" id="plant-submit-btn">Add Plant</button>
+                            <button type="button" class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </main>
-    
+
         <footer>
-            <h4>All from the mind and heart of Kayley Chery  </h4>
+            <h4>All from the mind and heart of Kayley Chery</h4>
         </footer>
     </div>
+
     <script src="script.js"></script>
+    <script src="plants.js"></script>
 </body>
 </html>
