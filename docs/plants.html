@@ -93,14 +93,18 @@
                             <input type="text" id="plant-name" required placeholder="e.g. Monstera Deliciosa">
                         </div>
                         <div class="form-group">
-                            <label for="plant-desc">Description</label>
-                            <textarea id="plant-desc" rows="4" placeholder="Tell us about this plant..."></textarea>
+                            <label for="plant-image">Photo</label>
+                            <input type="file" id="plant-image" accept="image/*" onchange="onPhotoSelected(this)">
+                            <img id="image-preview" class="image-preview" style="display:none;" alt="Preview">
+                            <!-- Auto-filled from the photo's EXIF metadata -->
+                            <div id="exif-date-row" class="exif-date-row" style="display:none;">
+                                <span class="exif-label">Photo taken:</span>
+                                <span id="exif-date-value" class="exif-value"></span>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label for="plant-image-url">Photo URL (optional)</label>
-                            <input type="url" id="plant-image-url" placeholder="https://i.imgur.com/example.jpg">
-                            <span class="field-hint">Upload your photo to Imgur, Google Photos, etc. and paste the link here.</span>
-                            <img id="image-preview" class="image-preview" style="display:none;" alt="Preview">
+                            <label for="plant-comment">Comment</label>
+                            <textarea id="plant-comment" rows="3" placeholder="What do you want to say about this plant?"></textarea>
                         </div>
                         <div class="modal-actions">
                             <button type="submit" class="submit-btn" id="plant-submit-btn">Add Plant</button>
@@ -117,6 +121,8 @@
     </div>
 
     <script src="script.js"></script>
+    <!-- Lightweight EXIF reader for extracting photo date metadata -->
+    <script src="https://cdn.jsdelivr.net/npm/exifr@7/dist/lite.umd.js"></script>
     <script src="plants.js"></script>
 </body>
 </html>
